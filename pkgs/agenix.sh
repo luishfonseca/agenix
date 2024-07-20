@@ -128,7 +128,6 @@ function decrypt {
 
     if [ -f "$FILE" ]
     then
-        DECRYPT=("${DEFAULT_DECRYPT[@]}")
         if [[ "${DECRYPT[*]}" != *"--identity"* ]]; then
             if [ -f "$HOME/.ssh/id_rsa" ]; then
                 DECRYPT+=(--identity "$HOME/.ssh/id_rsa")
@@ -151,7 +150,8 @@ function edit {
 
     CLEARTEXT_DIR=$(@mktempBin@ -d)
     CLEARTEXT_FILE="$CLEARTEXT_DIR/$(basename "$FILE")"
-    DEFAULT_DECRYPT+=(-o "$CLEARTEXT_FILE")
+    DECRYPT=("${DEFAULT_DECRYPT[@]}")
+    DECRYPT+=(-o "$CLEARTEXT_FILE")
 
     decrypt "$FILE" "$KEYS" || exit 1
 
@@ -200,5 +200,5 @@ function rekey {
 }
 
 [ $REKEY -eq 1 ] && rekey && exit 0
-[ $DECRYPT_ONLY -eq 1 ] && DEFAULT_DECRYPT+=("-o" "-") && decrypt "${FILE}" "$(keys "$FILE")" && exit 0
+[ $DECRYPT_ONLY -eq 1 ] && DECRYPT=("${DEFAULT_DECRYPT[@]}") && DECRYPT+=("-o" "-") && decrypt "${FILE}" "$(keys "$FILE")" && exit 0
 edit "$FILE" && cleanup && exit 0
